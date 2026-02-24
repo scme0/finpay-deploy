@@ -1,0 +1,37 @@
+step "deploy-helm-chart" {
+    name = "Deploy Helm Chart"
+    properties = {
+        Octopus.Action.TargetRoles = "merchants-k8s"
+    }
+
+    action {
+        action_type = "Octopus.HelmChartUpgrade"
+        properties = {
+            Octopus.Action.GitRepository.Source = "External"
+            Octopus.Action.Helm.ChartDirectory = "charts/merchant-portal/"
+            Octopus.Action.Helm.Namespace = "#{Namespace}"
+            Octopus.Action.Helm.ReleaseName = "merchant-portal-#{Octopus.Deployment.Tenant.Name}"
+            Octopus.Action.Helm.ResetValues = "True"
+            Octopus.Action.Helm.TemplateValuesSources = <<-EOT
+                [
+                  {
+                    "Type": "KeyValues",
+                    "Value": {
+                      "env.BRAND_COLOR": "#{BrandColor}",
+                      "env.DATA_REGION": "#{DataRegion}"
+                    }
+                  }
+                ]
+                EOT
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
+            Octopus.Action.Script.ScriptSource = "GitRepository"
+        }
+
+        git_dependencies {
+            default_branch = "main"
+            git_credential_id = "GitCredentials-23"
+            git_credential_type = "Library"
+            repository_uri = "https://github.com/scme0/finpay-deploy.git"
+        }
+    }
+}
