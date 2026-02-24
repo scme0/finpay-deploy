@@ -5,6 +5,9 @@ metadata:
   namespace: payments-prod
   labels:
     app: payments-api
+  annotations:
+    argo.octopus.com/project: payments-api-argo
+    argo.octopus.com/environment: development
 spec:
   replicas: 3
   selector:
